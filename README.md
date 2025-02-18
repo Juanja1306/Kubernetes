@@ -1,6 +1,53 @@
 
 # Guía de Configuración del Proyecto
 
+## Comandos importantes
+
+Para iniciar minikube:
+```bash
+minikube start
+```
+
+Para Subir las imagenes de docker al dockerhub:
+
+```bash
+cd .\backend_django\
+docker build -t juanja/web123 .
+docker tag juanja/web123 juanja/web123:latest
+docker push juanja/web123:latest
+
+cd .\react_cliente_frontend\
+docker build -t juanja/front123 .
+docker tag juanja/front123 juanja/front123:latest
+docker push juanja/front123:latest
+```
+
+Para iniciar los kubernetes:
+```bash
+kompose convert --controller deployment -f docker-compose.yml
+kubectl apply -f .
+kubectl get pods -o wide
+minikube service frontend
+kubectl port-forward service/web 8000:8000
+
+kubectl logs -f deployment/web
+```
+
+Para Revisasr los pods y servicios
+```bash
+kubectl get pods
+kubectl get svc
+```
+
+Para eliminar las replicas, servicios y pods
+```bash
+kubectl scale deployment --all --replicas=0
+kubectl delete pods --all
+kubectl delete svc --all
+kubectl delete pod web-5df8df87c5-744ft
+```
+
+# La misma practica de docker-compose:
 ## Configuración de los Volumenes en Docker
 
 En el archivo `docker-compose.yml`, ajusta los volumenes para almacenar la base de datos en tu PC local, por ejemplo:
