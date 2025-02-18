@@ -1,0 +1,55 @@
+Hacer una imagen de la base de datos  y hacer que el backedn apunto a eso.
+
+Actualizar el dockerhub del backend llamado web
+
+No olvidar hacer 
+python manage.py makemigrations postgres -v 3
+python manage.py migrate
+
+
+docker:
+docker build -t juanja/web123 .
+docker tag juanja/web123 juanja/web123:latest 
+docker push juanja/web123:latest 
+
+
+
+comandos:
+# Todas las replicas a 0
+kubectl scale deployment --all --replicas=0 
+ 
+#ver los pods
+kubectl get pods
+
+# Eliminar un pod especifico
+kubectl delete pod web
+
+# Crea los servicios
+kubectl apply -f .
+
+# Entrar a los logs
+kubectl logs web
+kubectl logs web -c django-backend
+
+
+# Ver los servicios
+kubectl get svc
+kubectl get svc -o wide
+
+# Iniciar minikube
+minikube start
+
+# Habilitar el servicios
+kubectl port-forward service/frontend 5173:5173
+http://localhost:5173
+
+kubectl port-forward service/web 8000:8000
+
+# Solo deployment
+kompose convert --controller deployment -f docker-compose.yml
+
+# dar una url con puerto
+minikube service web
+
+
+PS C:\Users\juanj\Desktop\tienda_para_todos> kubectl port-forward service/web 8000:8000

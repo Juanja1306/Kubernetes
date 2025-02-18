@@ -1,0 +1,138 @@
+services:
+
+  db-postgres:
+    image: postgres:latest
+    container_name: postgres-db-new
+    environment:
+      POSTGRES_DB: probando
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: probando
+      TZ:  America/Guayaquil
+    ports:
+      - "5432:5432"
+    networks:
+      - datalogger_net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  admin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@jasoft.ec
+      PGADMIN_DEFAULT_PASSWORD: clave
+      TZ:  America/Guayaquil
+    ports:
+      - 5050:80
+    depends_on:
+      - db-postgres
+    networks:
+      - datalogger_net
+
+  web:
+    image: juanja/web123
+    container_name: django_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=backend_django.settings
+      - POSTGRES_DB=probando
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=probando
+      - POSTGRES_HOST=db-postgres
+      - POSTGRES_PORT=5432
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=admin123
+    depends_on:
+      - db-postgres
+      - admin
+    restart: always
+    networks:
+      - datalogger_net
+    command: >
+      sh -c "python manage.py migrate &&
+      python manage.py shell < create_superuser.py &&
+      python manage.py runserver 0.0.0.0:8000"
+
+
+  frontend:
+    image: juanja/front123
+    container_name: react_frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - datalogger_net
+  
+  portainer:
+    image: portainer/portainer-ce
+    restart: always
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - datalogger_net
+  
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: always
+    networks:
+      - datalogger_net
+
+  netdata:
+    image: netdata/netdata:latest
+    container_name: netdata
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor=unconfined
+    ports:
+      - 19999:19999
+    restart: always
+    networks:
+      - datalogger_net
+
+  ssh-server:
+    image: rastasheep/ubuntu-sshd:latest
+    container_name: ssh-server
+    environment:
+      - SSH_USER=usuario
+      - SSH_PASSWORD=contra0000
+    ports:
+      - "2222:22"
+    networks:
+      - datalogger_net
+    restart: unless-stopped
+
+
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: C:/Users/juanj/Desktop/datapg
+  
+  portainer_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: C:/Users/juanj/Desktop/portainer
+
+  grafana_data:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: C:/Users/juanj/Desktop/grafana_data
+
+
+networks:
+  datalogger_net:
